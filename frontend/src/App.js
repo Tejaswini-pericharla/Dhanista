@@ -51,7 +51,9 @@ const ChatBox = ({ messages, addMessage }) => {
   // Simulate a fixed user ID for demonstration purposes.
   // In a production application, this would typically come from an authentication system.
   const userId = "demo_user_123";
-  const API_BASE_URL = "http://localhost:5000"; // Base URL for the backend API
+  // Updated API_BASE_URL to an empty string for Vercel deployment.
+  // This makes API calls relative to the current domain (e.g., your-project-name.vercel.app/api/chat)
+  const API_BASE_URL = "";
 
   // useEffect hook to scroll to the bottom of the chat box whenever the messages array changes.
   useEffect(() => {
@@ -100,7 +102,7 @@ const ChatBox = ({ messages, addMessage }) => {
   }, [input, addMessage]); // Dependencies: 'input' (for the message content) and 'addMessage' (to update chat history).
 
   return (
-    // Increased max-w to 3xl for wider chat box
+    // Removed 'md:' prefix from animate-fade-in-left to apply on all screen sizes
     <div className="flex flex-col border border-blue-300 rounded-lg shadow-lg bg-white p-4 max-w-3xl mx-auto mb-8 animate-fade-in-left w-full">
       <h3 className="text-xl font-semibold mb-4 text-center text-blue-700">Chat with Dhanista</h3> {/* Changed text here */}
       <div className="flex flex-col h-80 overflow-y-auto mb-4 p-2 border border-blue-200 rounded-md bg-blue-50 custom-scrollbar">
@@ -151,7 +153,8 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
   const [showModal, setShowModal] = useState(false); // State to control the visibility of the custom modal
   const [modalMessage, setModalMessage] = useState(""); // State for the message displayed within the custom modal
 
-  const API_BASE_URL = "http://localhost:5000"; // Base URL for the backend API
+  // Updated API_BASE_URL to an empty string for Vercel deployment.
+  const API_BASE_URL = "";
 
   // Function to display the custom modal with a specific message.
   const showCustomModal = (msg) => {
@@ -250,7 +253,7 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
   };
 
   return (
-    // Increased max-w to 3xl for wider admin panel
+    // Removed 'md:' prefix from animate-fade-in-right to apply on all screen sizes
     <div className="flex flex-col border border-green-300 rounded-lg shadow-lg bg-white p-4 max-w-3xl mx-auto animate-fade-in-right w-full">
       <h3 className="text-xl font-semibold mb-4 text-center text-green-700">Admin - Upload FAQs</h3>
       <input
