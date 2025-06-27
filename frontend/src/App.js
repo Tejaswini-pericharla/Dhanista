@@ -49,11 +49,10 @@ const ChatBox = ({ messages, addMessage }) => {
   const chatEndRef = useRef(null); // Ref to enable auto-scrolling to the latest message
 
   // Simulate a fixed user ID for demonstration purposes.
-  // In a production application, this would typically come from an authentication system.
   const userId = "demo_user_123";
-  // Updated API_BASE_URL to an empty string for Vercel deployment.
-  // This makes API calls relative to the current domain (e.g., your-project-name.vercel.app/api/chat)
-  const API_BASE_URL = "";
+
+  // RECTIFIED: Set API_BASE_URL based on environment
+  const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000';
 
   // useEffect hook to scroll to the bottom of the chat box whenever the messages array changes.
   useEffect(() => {
@@ -61,12 +60,10 @@ const ChatBox = ({ messages, addMessage }) => {
   }, [messages]);
 
   // useEffect hook to fetch initial chat history when the component mounts.
-  // Currently, it's a placeholder, relying on the backend to manage history on POST.
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
         // Placeholder for fetching chat history if a GET /api/chat/:userId endpoint existed.
-        // For now, the application starts with a fresh chat or relies on backend history management.
       } catch (error) {
         console.error("Error fetching chat history:", error);
       }
@@ -99,12 +96,12 @@ const ChatBox = ({ messages, addMessage }) => {
     } finally {
       setIsTyping(false); // Hide the typing indicator regardless of success or failure.
     }
-  }, [input, addMessage]); // Dependencies: 'input' (for the message content) and 'addMessage' (to update chat history).
+  }, [input, addMessage, API_BASE_URL]); // Dependencies: 'input', 'addMessage', and API_BASE_URL
 
   return (
     // Removed 'md:' prefix from animate-fade-in-left to apply on all screen sizes
     <div className="flex flex-col border border-blue-300 rounded-lg shadow-lg bg-white p-4 max-w-3xl mx-auto mb-8 animate-fade-in-left w-full">
-      <h3 className="text-xl font-semibold mb-4 text-center text-blue-700">Chat with Dhanista</h3> {/* Changed text here */}
+      <h3 className="text-xl font-semibold mb-4 text-center text-blue-700">Chat with Dhanista</h3>
       <div className="flex flex-col h-80 overflow-y-auto mb-4 p-2 border border-blue-200 rounded-md bg-blue-50 custom-scrollbar">
         {/* Conditional rendering for an empty chat state */}
         {messages.length === 0 && (
@@ -127,13 +124,12 @@ const ChatBox = ({ messages, addMessage }) => {
           type="text"
           placeholder="Type your message..."
           value={input}
-          onChange={e => setInput(e.target.value)} // Update input state on change
-          onKeyDown={e => e.key === 'Enter' && sendMessage()} // Send message on Enter key press
-          // Styling for the input field, with transition for shadow on focus
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && sendMessage()}
           className="flex-1 p-3 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:shadow-lg transition-shadow text-gray-700"
         />
         <button
-          onClick={sendMessage} // Send message on button click
+          onClick={sendMessage}
           className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out"
         >
           Send
@@ -146,15 +142,15 @@ const ChatBox = ({ messages, addMessage }) => {
 // === components/AdminUpload.js ===
 // Component for admin to upload FAQ content, supporting both text and various file types.
 const AdminUpload = ({ onClose, onUploadSuccess }) => {
-  const [title, setTitle] = useState(""); // State for FAQ title input
-  const [content, setContent] = useState(""); // State for FAQ text content input
-  const [file, setFile] = useState(null); // State to store the selected file object (e.g., PDF, JPG)
-  const [message, setMessage] = useState(""); // General message for success or error feedback (e.g., "FAQ uploaded successfully!")
-  const [showModal, setShowModal] = useState(false); // State to control the visibility of the custom modal
-  const [modalMessage, setModalMessage] = useState(""); // State for the message displayed within the custom modal
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [file, setFile] = useState(null);
+  const [message, setMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
-  // Updated API_BASE_URL to an empty string for Vercel deployment.
-  const API_BASE_URL = "";
+  // RECTIFIED: Set API_BASE_URL based on environment
+  const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000';
 
   // Function to display the custom modal with a specific message.
   const showCustomModal = (msg) => {
@@ -221,23 +217,23 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
           onUploadSuccess(); // Call the callback to hide the admin panel if provided.
         }
       } else {
-         // Fallback message if backend response doesn't explicitly include "successfully" but also didn't throw an error.
-         setMessage(response.data.message || "Upload completed with an unexpected message.");
+          // Fallback message if backend response doesn't explicitly include "successfully" but also didn't throw an error.
+          setMessage(response.data.message || "Upload completed with an unexpected message.");
       }
 
     } catch (error) {
       // Handle errors during the upload process (network issues, backend errors, etc.).
       console.error("Error uploading FAQ:", error.response ? error.response.data : error.message);
       const errorMessage = error.response && error.response.data && error.response.data.message
-                           ? error.response.data.message // Use error message from backend if available
-                           : "Failed to upload FAQ. Please check your network and try again."; // Generic error message
+                             ? error.response.data.message // Use error message from backend if available
+                             : "Failed to upload FAQ. Please check your network and try again."; // Generic error message
       setMessage(errorMessage); // Display error message to the user.
       showCustomModal(errorMessage); // Also show the error in the custom modal for prominent display.
     } finally {
       // Clear the general message after a delay, regardless of success or failure.
       setTimeout(() => setMessage(""), 5000);
     }
-  }, [title, content, file, onUploadSuccess]); // Dependencies for useCallback.
+  }, [title, content, file, onUploadSuccess, API_BASE_URL]); // Added API_BASE_URL to dependencies for useCallback.
 
   // handleFileChange function processes the selected file from the input.
   const handleFileChange = (e) => {
@@ -260,15 +256,15 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
         type="text"
         placeholder="FAQ Title"
         value={title}
-        onChange={e => setTitle(e.target.value)} // Update title state on change
+        onChange={e => setTitle(e.target.value)}
         className="mb-3 p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:shadow-lg transition-shadow text-gray-700"
       />
       <textarea
         placeholder="FAQ Content (or leave blank if uploading file)"
         value={content}
-        onChange={e => { setContent(e.target.value); setFile(null); }} // Update content state; clear file if typing in textarea
+        onChange={e => { setContent(e.target.value); setFile(null); }}
         rows="5"
-        disabled={!!file} // Disable textarea if a file is selected
+        disabled={!!file}
         className="mb-4 p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 resize-y focus:shadow-lg transition-shadow text-gray-700 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
       />
 
@@ -279,42 +275,38 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
         <input
           type="file"
           id="file-upload"
-          accept="*/*" // Accept all file types
+          accept="*/*"
           onChange={handleFileChange}
-          disabled={!!content.trim()} // Disable file input if text content is provided
+          disabled={!!content.trim()}
           className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
         />
-        {file && <p className="mt-2 text-sm text-gray-600">Selected: {file.name}</p>} {/* Display selected file name */}
+        {file && <p className="mt-2 text-sm text-gray-600">Selected: {file.name}</p>}
       </div>
 
       <button
-        onClick={upload} // Trigger upload function on click
-        // Only disable button if BOTH content and file are empty.
-        // This allows clicking even if title is empty, so validation inside 'upload' can run.
+        onClick={upload}
         disabled={!content.trim() && !file}
         className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 ease-in-out"
       >
-        {file ? 'Upload File FAQ' : 'Upload Text FAQ'} {/* Dynamic button text */}
+        {file ? 'Upload File FAQ' : 'Upload Text FAQ'}
       </button>
-      {/* Display general success/error message */}
       {message && (
         <p className={`mt-4 text-center font-medium ${message.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
           {message}
         </p>
       )}
       <button
-        onClick={onClose} // Button to close the admin panel and return to chat view
-        className="mt-6 px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 transition duration-200 ease-in-out"
+        onClick={onClose}
+        className="mt-6 px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg shadow-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus://ring-purple-400 transition duration-200 ease-in-out"
       >
         Back to Chat
       </button>
 
-      {/* Custom Modal component rendered here */}
       <Modal
-        show={showModal} // Controls modal visibility
-        title="Input Required" // Title of the modal
-        message={modalMessage} // Message content of the modal
-        onClose={closeCustomModal} // Function to close the modal
+        show={showModal}
+        title="Input Required"
+        message={modalMessage}
+        onClose={closeCustomModal}
       />
     </div>
   );
@@ -322,29 +314,25 @@ const AdminUpload = ({ onClose, onUploadSuccess }) => {
 
 // Main application component
 function App() {
-  const [messages, setMessages] = useState([]); // State to hold chat messages
-  const [showAdminPanel, setShowAdminPanel] = useState(false); // State to toggle admin panel visibility
-  const [isCogSpinning, setIsCogSpinning] = useState(false); // New state for cog animation
+  const [messages, setMessages] = useState([]);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isCogSpinning, setIsCogSpinning] = useState(false);
 
-  // Callback to add a new message to the chat history state.
   const addMessage = useCallback((message) => {
     setMessages((prevMessages) => [...prevMessages, message]);
   }, []);
 
-  // Callback to hide the admin panel after a successful FAQ upload.
   const handleUploadSuccess = useCallback(() => {
     setShowAdminPanel(false);
   }, []);
 
-  // Handler for settings icon click
   const handleCogClick = () => {
-    setShowAdminPanel(true); // Always open admin panel
-    setIsCogSpinning(true); // Start the spin animation
+    setShowAdminPanel(true);
+    setIsCogSpinning(true);
 
-    // Reset spin animation after it completes (e.g., 0.5s)
     setTimeout(() => {
       setIsCogSpinning(false);
-    }, 500); // Duration of spin-once animation
+    }, 500);
   };
 
   return (
@@ -363,18 +351,17 @@ function App() {
           width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #fff7ed; /* Lightest orange for scrollbar track */
+          background: #fff7ed;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #fbcfe8; /* Light pink for scrollbar thumb */
+          background: #fbcfe8;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #f472b6; /* Medium pink on hover for scrollbar thumb */
+          background: #f472b6;
         }
 
-        /* Custom Keyframe for Fade-in Animation (for message bubbles) */
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -389,7 +376,6 @@ function App() {
           animation: fade-in 0.5s ease-out forwards;
         }
 
-        /* Custom Keyframe for Modal Fade-in Up Animation */
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -404,7 +390,6 @@ function App() {
           animation: fade-in-up 0.3s ease-out forwards;
         }
 
-        /* New Keyframe for Fade-in from Left */
         @keyframes fade-in-left {
           from {
             opacity: 0;
@@ -416,10 +401,9 @@ function App() {
           }
         }
         .animate-fade-in-left {
-          animation: fade-in-left 0.8s ease-out forwards; /* Increased duration */
+          animation: fade-in-left 0.8s ease-out forwards;
         }
 
-        /* New Keyframe for Fade-in from Right */
         @keyframes fade-in-right {
           from {
             opacity: 0;
@@ -431,18 +415,16 @@ function App() {
           }
         }
         .animate-fade-in-right {
-          animation: fade-in-right 0.8s ease-out forwards; /* Increased duration */
+          animation: fade-in-right 0.8s ease-out forwards;
         }
 
-        /* Basic hover transition for buttons */
         button {
             transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
         }
         button:hover {
-            transform: translateY(-1px); /* Slight lift on hover */
+            transform: translateY(-1px);
         }
 
-        /* New Keyframe for a single 360-degree spin */
         @keyframes spin-once {
           from {
             transform: rotate(0deg);
@@ -452,10 +434,9 @@ function App() {
           }
         }
         .animate-spin-once {
-          animation: spin-once 0.5s ease-out forwards; /* Spin once, then stop */
+          animation: spin-once 0.5s ease-out forwards;
         }
 
-        /* New Keyframe for Title Pop-in Animation */
         @keyframes title-pop-in {
           0% {
             opacity: 0;
@@ -473,31 +454,27 @@ function App() {
           animation: title-pop-in 0.8s ease-out forwards;
         }
 
-        /* New Keyframe for continuous color cycling */
         @keyframes color-cycle {
-          0% { color: #f87171; } /* Red-400 */
-          25% { color: #60a5fa; } /* Blue-400 */
-          50% { color: #34d399; } /* Green-400 */
-          75% { color: #facc15; } /* Yellow-400 */
-          100% { color: #f87171; } /* Back to Red-400 */
+          0% { color: #f87171; }
+          25% { color: #60a5fa; }
+          50% { color: #34d399; }
+          75% { color: #facc15; }
+          100% { color: #f87171; }
         }
         .animate-color-cycle {
-          animation: color-cycle 4s linear infinite; /* 4 seconds, linear, infinite loop */
+          animation: color-cycle 4s linear infinite;
         }
         `}
       </style>
       <header className="text-center mb-10 relative">
-        {/* Adjusted the main container width for grid layout to allow wider children */}
         <h1 className="text-4xl font-bold mb-2 animate-title-pop-in animate-color-cycle">Hello! I'm Dhanista, your helpful AI assistant</h1>
         <p className="text-gray-600 text-lg">Your instant connection to answers.</p>
 
-        {/* Settings Icon button to open the Admin Panel */}
         <button
           onClick={handleCogClick}
           className={`absolute top-4 right-4 p-2 bg-purple-200 hover:bg-purple-300 text-purple-700 rounded-full shadow-md transition-colors duration-200 ${isCogSpinning ? 'animate-spin-once' : ''}`}
           aria-label="Open Admin Panel"
         >
-          {/* Cog SVG Icon for settings */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-6 w-6"
@@ -516,8 +493,6 @@ function App() {
         </button>
       </header>
 
-      {/* Conditional rendering of chat and admin panels based on 'showAdminPanel' state */}
-      {/* Adjusted grid for responsiveness: single column on small screens, two columns on medium and larger */}
       <div className={showAdminPanel ? "grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto" : "flex justify-center max-w-6xl mx-auto"}>
         <ChatBox messages={messages} addMessage={addMessage} />
         {showAdminPanel && <AdminUpload onClose={() => setShowAdminPanel(false)} onUploadSuccess={handleUploadSuccess} />}
